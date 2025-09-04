@@ -8,5 +8,4 @@ refresh:
 	$(PY) -m src.transforms.build_market_metrics
 
 app:
-	streamlit run app/streamlit_app.py
-
+	$(PY) -m streamlit run app/streamlit_app.py

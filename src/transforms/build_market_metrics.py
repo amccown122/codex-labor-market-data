@@ -8,33 +8,37 @@ import pandas as pd
 from src.utils.storage import read_csv, write_csv, write_duckdb_table
 
 
-BASELINE = pd.Timestamp("2019-12-01").date()
+BASELINE = pd.Timestamp("2019-12-01")
 
 
 def pivot_series(df: pd.DataFrame) -> pd.DataFrame:
     # Expect long format: series_id, date, value
-    wide = df.pivot_table(index="date", columns="series_id", values="value", aggfunc="last")
-    wide = wide.sort_index()
-    wide.index = pd.to_datetime(wide.index).date
-    wide = wide.reset_index()
+    wide = df.copy()
+    wide["date"] = pd.to_datetime(wide["date"]).dt.to_period("M").dt.to_timestamp()
+    wide = wide.pivot_table(index="date", columns="series_id", values="value", aggfunc="last").sort_index().reset_index()
     wide.rename(columns={
         "index": "date",
     }, inplace=True)
     return wide
 
 
-def normalize_index(series: pd.Series, baseline_date: pd.Timestamp | pd.Timestamp.date) -> pd.Series:
+def normalize_index(series: pd.Series, baseline_ts: pd.Timestamp) -> pd.Series:
     if series is None or series.empty:
         return series
-    # Find baseline value (closest on/after baseline)
-    try:
-        s = series.copy()
-        base_val = s.loc[series.index.get_loc(baseline_date, method="nearest")] if hasattr(series.index, 'get_loc') else s.iloc[0]
-    except Exception:
-        base_val = series.dropna().iloc[0]
-    if base_val == 0 or pd.isna(base_val):
-        return series * 0.0
-    return (series / base_val) * 100.0
+    s = series.copy()
+    if not isinstance(s.index, pd.DatetimeIndex):
+        s.index = pd.to_datetime(s.index)
+    s = s.sort_index()
+    # Prefer value at/before baseline; fallback to first after
+    before = s.loc[s.index <= baseline_ts]
+    if not before.empty:
+        base_val = before.iloc[-1]
+    else:
+        after = s.loc[s.index >= baseline_ts]
+        base_val = after.iloc[0] if not after.empty else s.dropna().iloc[0]
+    if pd.isna(base_val) or base_val == 0:
+        return s * 0.0
+    return (s / base_val) * 100.0
 
 
 def build_metrics(wide: pd.DataFrame) -> pd.DataFrame:
@@ -52,17 +56,19 @@ def build_metrics(wide: pd.DataFrame) -> pd.DataFrame:
 
     # Build indices normalized to baseline
     df = wide[["date"] + [c for c in ["unemp_rate", "job_openings", "hires", "quits", "cpi"] if c in wide.columns]].copy()
-    df["date"] = pd.to_datetime(df["date"]).dt.date
+    df["date"] = pd.to_datetime(df["date"])  # monthly-aligned
     df = df.sort_values("date")
 
     # CPI index
     if "cpi" in df.columns:
-        df["cpi_index"] = normalize_index(df["cpi"], BASELINE)
+        s = df.set_index("date")["cpi"]
+        df["cpi_index"] = normalize_index(s, BASELINE).reindex(df["date"]).values
 
     # Openings, hires, quits indices
     for col in ["job_openings", "hires", "quits"]:
         if col in df.columns:
-            df[f"{col}_index"] = normalize_index(df[col], BASELINE)
+            s = df.set_index("date")[col]
+            df[f"{col}_index"] = normalize_index(s, BASELINE).reindex(df["date"]).values
 
     # Real openings index (deflate by CPI index)
     if "job_openings_index" in df.columns and "cpi_index" in df.columns:
@@ -98,4 +104,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
-

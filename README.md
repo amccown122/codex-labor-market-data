@@ -22,11 +22,11 @@ Lightweight, US-only proof of concept for near-real-time labor market signals an
 
 ## Streamlit Dashboard
 - Pages:
-  - Market Tightness: Openings index (2019-12=100) vs Unemployment rate.
+  - Market Tightness: Openings index vs Unemployment rate.
   - Churn Pressure: Quits vs Hires indices.
   - Real Trend: CPI-deflated openings.
   - Skills: Role-family overviews using Lightcast Open Skills taxonomy.
-- Controls: Date range, baseline month, smoothing (MA3), show YoY toggles.
+- Controls: Date range, baseline month selector (index=100), smoothing (MA3), optional YoY lines.
 
 ## Repository Structure
 ```
@@ -66,11 +66,11 @@ cp .env.example .env
 Optionally set `USE_DUCKDB=true` to also maintain `data/labor.duckdb`.
 
 ## Usage
-- Refresh data and metrics:
+- Refresh data (sources). Metrics now computed in the app for flexibility:
 ```
 make refresh
 ```
-Runs FRED pulls → skills load → metrics build → writes CSVs and DuckDB tables.
+Runs FRED pulls → skills load → metrics build (default artifacts).
 
 - Launch dashboard:
 ```
