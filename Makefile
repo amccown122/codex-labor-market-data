@@ -16,4 +16,7 @@ refresh-metrics:
 	$(PY) -m src.transforms.build_market_metrics
 
 app:
+	$(PY) -m streamlit run app/Home.py
+
+app-classic:
 	$(PY) -m streamlit run app/streamlit_app.py

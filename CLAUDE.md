@@ -14,8 +14,13 @@ make refresh-fred     # Just FRED data
 make refresh-skills   # Just skills taxonomy (optional)
 make refresh-metrics  # Just rebuild metrics
 
-# Launch Streamlit dashboard
+# Launch enhanced dashboard (recommended)
 make app
+# Alternative:
+python3 -m streamlit run app/Home.py
+
+# Launch classic single-page dashboard
+make app-classic
 # Alternative:
 python3 -m streamlit run app/streamlit_app.py
 ```
@@ -41,13 +46,21 @@ cp .env.example .env
 2. **Transforms** (`src/transforms/`) - Process raw data into market metrics
    - `build_market_metrics.py`: Creates indices normalized to baseline (Dec 2019), computes real values deflated by CPI
 
-3. **Storage** (`src/utils/storage.py`) - Dual storage strategy
+3. **Signals** (`src/signals/`) - Advanced market intelligence
+   - `market_conditions.py`: Calculates Employer Power Index, Talent Velocity, headwind/tailwind classification
+
+4. **Storage** (`src/utils/storage.py`) - Dual storage strategy
    - Primary: CSV files in `data/csv/`
    - Optional: DuckDB file at `data/labor.duckdb` (controlled by `USE_DUCKDB` env var)
 
-4. **Dashboard** (`app/streamlit_app.py`) - Interactive visualization
-   - Computes metrics dynamically based on user-selected baseline month
-   - Provides multiple views: Market Tightness, Churn Pressure, Real Trend, Skills
+5. **Dashboard** - Multi-page interactive visualization
+   - **Enhanced Dashboard** (`app/Home.py`): Executive overview with market signals
+     - Market Signals page: Headwind/tailwind analysis with strategic recommendations
+     - Employer Power Index and Talent Velocity calculations
+     - Real-time market condition classification
+   - **Classic Dashboard** (`app/streamlit_app.py`): Traditional single-page view
+     - Market Tightness, Churn Pressure, Real Trend analysis
+     - User-selected baseline month calculations
 
 ### Key Design Patterns
 

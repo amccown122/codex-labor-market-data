@@ -113,7 +113,12 @@ streamlit run app/streamlit_app.py
 
 ## Current Status
 - ✅ FRED data integration working (5 economic series)
-- ✅ Streamlit dashboard functional with interactive controls
+- ✅ **Enhanced dashboard with market signals** - NEW!
+  - Employer Power Index calculation
+  - Talent Velocity tracking
+  - Headwind/tailwind classification
+  - Strategic recommendations
+- ✅ Classic dashboard with interactive controls
 - ⚠️ Lightcast skills data URL needs update (optional component)
 - ✅ Modular architecture ready for additional data sources
 

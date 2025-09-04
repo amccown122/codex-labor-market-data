@@ -7,10 +7,17 @@ import plotly.express as px
 from src.utils.storage import read_csv
 
 
-st.set_page_config(page_title="Labor Market Pulse (PoC)", layout="wide")
+st.set_page_config(page_title="Labor Market Pulse - Classic View", layout="wide")
 
-st.title("Labor Market Pulse (PoC)")
-st.caption("Free signals via FRED + Lightcast Open Skills (US-only)")
+# Navigation note
+st.info("""
+🆕 **New Enhanced Dashboard Available!** 
+- Run `streamlit run app/Home.py` for the new multi-page dashboard with market signals
+- This page provides the original single-page view for reference
+""")
+
+st.title("Labor Market Pulse - Classic Dashboard")
+st.caption("Traditional view: FRED Economic Data Analysis")
 
 
 @st.cache_data(show_spinner=False)
