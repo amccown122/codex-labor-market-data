@@ -12,6 +12,23 @@ from plotly.subplots import make_subplots
 from src.utils.storage import read_csv
 from src.signals.market_conditions import MarketSignals, generate_market_summary
 
+# Helper function for creating informative tooltips
+def create_tooltip(text, explanation):
+    """Create a tooltip with explanation for technical terms."""
+    return f'<span title="{explanation}" style="border-bottom: 1px dotted #666; cursor: help;">{text}</span>'
+
+def metric_card_with_tooltip(title, value, subtitle, explanation, color="#e5e7eb"):
+    """Create a metric card with built-in explanation tooltip."""
+    return f"""
+    <div style="background: white; border: 2px solid {color}; padding: 1.5rem; border-radius: 10px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <h3 style="margin: 0; color: #374151; font-size: 1.1rem; font-weight: 600;" title="{explanation}">
+            {title} <span style="color: #6b7280; font-size: 0.8rem;">ℹ️</span>
+        </h3>
+        <h1 style="margin: 0.5rem 0; color: #1f2937; font-size: 2.5rem; font-weight: 700;">{value}</h1>
+        <p style="margin: 0; color: #6b7280; font-size: 0.9rem; line-height: 1.4;">{subtitle}</p>
+    </div>
+    """
+
 st.set_page_config(
     page_title="Labor Market Pulse", 
     layout="wide",
@@ -227,14 +244,19 @@ if executive_mode:
         unemp_change = summary['metrics']['unemployment_rate']['mom_change']
         unemp_trend = "↗️" if "+" in unemp_change else "↘️"
         
+        explanation = "The unemployment rate measures the percentage of people actively looking for work. Lower rates mean fewer available candidates (harder to hire), while higher rates mean more candidates are available. The 'natural' rate is typically 4-5% for the U.S."
+        
         st.markdown(f"""
         <div style="background: white; border: 2px solid #e5e7eb; padding: 1.5rem; border-radius: 10px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-            <h3 style="margin: 0; color: #374151; font-size: 1.1rem; font-weight: 600;">💼 Talent Availability</h3>
+            <h3 style="margin: 0; color: #374151; font-size: 1.1rem; font-weight: 600;" title="{explanation}">
+                💼 Talent Availability <span style="color: #6b7280; font-size: 0.8rem; cursor: help;">ℹ️</span>
+            </h3>
             <h1 style="margin: 0.5rem 0; color: #1f2937; font-size: 2.5rem; font-weight: 700;">{unemployment} {unemp_trend}</h1>
             <p style="margin: 0; color: #6b7280; font-size: 0.9rem; line-height: 1.4;">
                 <strong>What it means:</strong> How easy it is to find candidates<br>
                 <strong>Source:</strong> U.S. Bureau of Labor Statistics<br>
-                <strong>Updated:</strong> {summary['date']}
+                <strong>Updated:</strong> {summary['date']}<br>
+                <small><em>💡 Hover over title for detailed explanation</em></small>
             </p>
         </div>
         """, unsafe_allow_html=True)
@@ -257,15 +279,21 @@ if executive_mode:
             ha_text = "Weak"
             ha_color = "#ef4444"
             ha_meaning = "Focus on retention"
+        
+        # Detailed explanation for EPI
+        epi_explanation = "The Hiring Advantage Score (also called EPI - Employer Power Index) measures whether market conditions favor employers or employees. It combines unemployment rates, job openings, quit rates, and wage trends. Higher scores mean employers have the advantage (easier to hire and retain), lower scores mean employees have the advantage (they can be pickier about jobs)."
             
         st.markdown(f"""
         <div style="background: white; border: 2px solid {ha_color}; padding: 1.5rem; border-radius: 10px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-            <h3 style="margin: 0; color: #374151; font-size: 1.1rem; font-weight: 600;">⚖️ Hiring Advantage</h3>
+            <h3 style="margin: 0; color: #374151; font-size: 1.1rem; font-weight: 600;" title="{epi_explanation}">
+                ⚖️ Hiring Advantage <span style="color: #6b7280; font-size: 0.8rem; cursor: help;">ℹ️</span>
+            </h3>
             <h1 style="margin: 0.5rem 0; color: {ha_color}; font-size: 2.5rem; font-weight: 700;">{ha_text} {ha_trend}</h1>
             <p style="margin: 0; color: #6b7280; font-size: 0.9rem; line-height: 1.4;">
                 <strong>What it means:</strong> {ha_meaning}<br>
                 <strong>Based on:</strong> FRED Economic Data<br>
-                <strong>Change:</strong> {ha_change} this month
+                <strong>Change:</strong> {ha_change} this month<br>
+                <small><em>💡 Also known as EPI (Employer Power Index)</em></small>
             </p>
         </div>
         """, unsafe_allow_html=True)
@@ -284,15 +312,21 @@ if executive_mode:
             risk_color = "#f59e0b"
             risk_icon = "⚡"
             risk_meaning = "Monitor trends closely"
+        
+        # Explanation for retention risk
+        retention_explanation = "Retention Risk assesses how likely employees are to voluntarily quit their jobs based on current quit rate trends, market conditions, and employee confidence indicators. When quit rates are high, it usually means employees feel confident about finding better jobs elsewhere."
             
         st.markdown(f"""
         <div style="background: white; border: 2px solid {risk_color}; padding: 1.5rem; border-radius: 10px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-            <h3 style="margin: 0; color: #374151; font-size: 1.1rem; font-weight: 600;">🚪 Retention Risk</h3>
+            <h3 style="margin: 0; color: #374151; font-size: 1.1rem; font-weight: 600;" title="{retention_explanation}">
+                🚪 Retention Risk <span style="color: #6b7280; font-size: 0.8rem; cursor: help;">ℹ️</span>
+            </h3>
             <h1 style="margin: 0.5rem 0; color: {risk_color}; font-size: 2.5rem; font-weight: 700;">{risk_icon} {retention_risk}</h1>
             <p style="margin: 0; color: #6b7280; font-size: 0.9rem; line-height: 1.4;">
                 <strong>What it means:</strong> {risk_meaning}<br>
                 <strong>Based on:</strong> JOLTS Survey Data<br>
-                <strong>Tracking:</strong> Quit rate trends
+                <strong>Tracking:</strong> Quit rate trends<br>
+                <small><em>💡 Higher quits = employees feel confident about job market</em></small>
             </p>
         </div>
         """, unsafe_allow_html=True)
@@ -590,10 +624,13 @@ st.info("""
 
 - **🏠 Home**: Executive overview and platform introduction (this page)
 - **📊 Market Signals**: Detailed headwind/tailwind analysis with strategic recommendations
+- **📖 Data Glossary**: Comprehensive explanations of all metrics, terms, and data sources
 - **📈 Market Tightness**: Traditional unemployment vs job openings analysis
 - **🔄 Churn Pressure**: Quits vs hires indices and turnover insights
 - **💰 Real Trend**: CPI-adjusted economic indicators
 - **🛠️ Skills**: Role-family analysis using skills taxonomy (when available)
+
+**💡 New to labor market data?** Start with the **Data Glossary** for clear explanations of all terms.
 """)
 
 # Quick action buttons
@@ -605,9 +642,8 @@ with col1:
         st.switch_page("pages/1_Market_Signals.py")
 
 with col2:
-    if st.button("📊 Market Analysis"):
-        # Will redirect to original analysis once we restructure
-        pass
+    if st.button("📖 Data Glossary", type="secondary"):
+        st.switch_page("pages/2_Data_Glossary.py")
 
 with col3:
     if st.button("🔄 Refresh Data"):

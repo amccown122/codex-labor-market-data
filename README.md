@@ -118,6 +118,7 @@ streamlit run app/streamlit_app.py
   - Talent Velocity tracking
   - Headwind/tailwind classification
   - Strategic recommendations
+  - Comprehensive data glossary with tooltips
 - ✅ Classic dashboard with interactive controls
 - ⚠️ Lightcast skills data URL needs update (optional component)
 - ✅ Modular architecture ready for additional data sources

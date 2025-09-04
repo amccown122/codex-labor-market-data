@@ -101,6 +101,12 @@ st.markdown("""
 st.title("🎯 Labor Market Signals Dashboard")
 st.caption("Real-time intelligence on market conditions - Headwinds vs Tailwinds")
 
+# Add help link to glossary
+col_title, col_help = st.columns([4, 1])
+with col_help:
+    if st.button("📖 Need help with terms?", help="View comprehensive data glossary"):
+        st.switch_page("pages/2_Data_Glossary.py")
+
 # Load data
 @st.cache_data(show_spinner=False)
 def load_and_process_data():
@@ -192,6 +198,23 @@ if trends.get('signals'):
 # === STRATEGIC RECOMMENDATIONS ===
 st.markdown("---")
 st.header("🎯 Strategic Recommendations")
+
+# Add explanation for first-time users
+with st.expander("❓ What do these metrics mean?", expanded=False):
+    st.markdown("""
+    **🏆 Employer Power Index (EPI)** → **Hiring Advantage Score**
+    - Measures whether conditions favor employers (easier hiring/retention) or employees (competitive market)
+    - **Above 1.2**: Strong employer advantage - great time to hire strategically
+    - **0.8-1.2**: Balanced market - proceed with standard approach  
+    - **Below 0.8**: Employee advantage - focus on retention over hiring
+    
+    **⚡ Talent Velocity Score**
+    - Shows how fast people are changing jobs (quit rates + hire rates)
+    - **High velocity**: Competitive market with lots of job movement
+    - **Low velocity**: Stable market with less job hopping
+    
+    **💡 For detailed explanations** of all terms and data sources, visit the **📖 Data Glossary** page.
+    """)
 
 # Calculate recommendations based on current state
 market_class = signals_obj.classify_market_state(
