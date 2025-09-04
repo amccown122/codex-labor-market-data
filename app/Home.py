@@ -126,15 +126,22 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Header
-st.markdown("""
-<div class="main-header">
-    <h1 style="margin: 0; font-size: 2.5rem;">🎯 Labor Market Pulse</h1>
-    <p style="margin: 0.5rem 0 0 0; font-size: 1.2rem; opacity: 0.9;">
-        Strategic talent intelligence platform with real-time market signals
-    </p>
-</div>
-""", unsafe_allow_html=True)
+# Header with Executive Mode Toggle
+col_title, col_toggle = st.columns([3, 1])
+
+with col_title:
+    st.markdown("""
+    <div class="main-header">
+        <h1 style="margin: 0; font-size: 2.5rem;">🎯 Labor Market Pulse</h1>
+        <p style="margin: 0.5rem 0 0 0; font-size: 1.2rem; opacity: 0.9;">
+            Strategic talent intelligence platform with real-time market signals
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col_toggle:
+    st.markdown("<br>", unsafe_allow_html=True)  # Spacing
+    executive_mode = st.toggle("Executive Mode", value=True, help="30-second overview for busy executives")
 
 # Load and process data for summary
 @st.cache_data(show_spinner=False)
@@ -176,56 +183,285 @@ if summary_data is None:
 summary, full_data = summary_data
 
 # === EXECUTIVE DASHBOARD ===
-st.header("📊 Executive Dashboard")
-
-# Key metrics row
-col1, col2, col3, col4 = st.columns(4)
-
-with col1:
-    # Determine status class based on market state
-    state = summary['market_state']
-    status_class = 'status-positive' if 'EMPLOYER' in state else 'status-negative' if 'EMPLOYEE' in state else 'status-warning'
+if executive_mode:
+    st.header("📊 30-Second Executive Summary")
+    
+    # Single headline insight
+    market_state = summary['market_state']
+    hiring_state = summary['hiring_outlook']
+    
+    # Determine primary message and color
+    if "EMPLOYER" in market_state:
+        headline = "🟢 FAVORABLE CONDITIONS: Good time to hire strategically"
+        bg_color = "#10b981"
+    elif "EMPLOYEE" in market_state:
+        headline = "🔴 CHALLENGING CONDITIONS: Focus on retention over hiring"
+        bg_color = "#ef4444"
+    else:
+        headline = "🟡 MIXED CONDITIONS: Balanced approach recommended"
+        bg_color = "#f59e0b"
+    
+    # Executive headline banner
     st.markdown(f"""
-    <div class="metric-card {status_class}">
-        <h3 class="metric-title">Market State</h3>
-        <h2 class="metric-value">{state}</h2>
-        <p class="metric-subtitle">{summary['date']}</p>
+    <div style="background: {bg_color}; padding: 2rem; border-radius: 10px; color: white; text-align: center; margin-bottom: 2rem; border: none;">
+        <h1 style="margin: 0; color: white; font-size: 2rem; font-weight: 600;">{headline}</h1>
+        <p style="margin: 1rem 0 0 0; opacity: 0.9; font-size: 1.2rem;">Market Assessment • {summary['date']}</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+else:
+    st.header("📊 Detailed Market Analysis")
+
+# Key metrics row - different layouts for executive vs detailed mode
+if executive_mode:
+    # Executive mode: 3 key metrics with clear language
+    col1, col2, col3 = st.columns(3)
+else:
+    # Detailed mode: 4 technical metrics
+    col1, col2, col3, col4 = st.columns(4)
+
+if executive_mode:
+    # EXECUTIVE MODE: 3 clear metrics with business language and data sources
+    with col1:
+        unemployment = summary['metrics']['unemployment_rate']['value']
+        unemp_change = summary['metrics']['unemployment_rate']['mom_change']
+        unemp_trend = "↗️" if "+" in unemp_change else "↘️"
+        
+        st.markdown(f"""
+        <div style="background: white; border: 2px solid #e5e7eb; padding: 1.5rem; border-radius: 10px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+            <h3 style="margin: 0; color: #374151; font-size: 1.1rem; font-weight: 600;">💼 Talent Availability</h3>
+            <h1 style="margin: 0.5rem 0; color: #1f2937; font-size: 2.5rem; font-weight: 700;">{unemployment} {unemp_trend}</h1>
+            <p style="margin: 0; color: #6b7280; font-size: 0.9rem; line-height: 1.4;">
+                <strong>What it means:</strong> How easy it is to find candidates<br>
+                <strong>Source:</strong> U.S. Bureau of Labor Statistics<br>
+                <strong>Updated:</strong> {summary['date']}
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        hiring_advantage = summary['metrics']['employer_power_index']['value']
+        ha_change = summary['metrics']['employer_power_index']['mom_change']
+        ha_trend = "↗️" if "+" in ha_change else "↘️"
+        
+        # Simplify the interpretation
+        if hiring_advantage > 1.2:
+            ha_text = "Strong"
+            ha_color = "#10b981"
+            ha_meaning = "Great time to hire"
+        elif hiring_advantage > 0.8:
+            ha_text = "Moderate" 
+            ha_color = "#f59e0b"
+            ha_meaning = "Balanced market"
+        else:
+            ha_text = "Weak"
+            ha_color = "#ef4444"
+            ha_meaning = "Focus on retention"
+            
+        st.markdown(f"""
+        <div style="background: white; border: 2px solid {ha_color}; padding: 1.5rem; border-radius: 10px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+            <h3 style="margin: 0; color: #374151; font-size: 1.1rem; font-weight: 600;">⚖️ Hiring Advantage</h3>
+            <h1 style="margin: 0.5rem 0; color: {ha_color}; font-size: 2.5rem; font-weight: 700;">{ha_text} {ha_trend}</h1>
+            <p style="margin: 0; color: #6b7280; font-size: 0.9rem; line-height: 1.4;">
+                <strong>What it means:</strong> {ha_meaning}<br>
+                <strong>Based on:</strong> FRED Economic Data<br>
+                <strong>Change:</strong> {ha_change} this month
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+    with col3:
+        retention_risk = summary['retention_risk']
+        if retention_risk == "ELEVATED":
+            risk_color = "#ef4444"
+            risk_icon = "⚠️"
+            risk_meaning = "Watch for increased quits"
+        elif retention_risk == "LOW":
+            risk_color = "#10b981"
+            risk_icon = "✅"
+            risk_meaning = "Stable retention expected"
+        else:
+            risk_color = "#f59e0b"
+            risk_icon = "⚡"
+            risk_meaning = "Monitor trends closely"
+            
+        st.markdown(f"""
+        <div style="background: white; border: 2px solid {risk_color}; padding: 1.5rem; border-radius: 10px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+            <h3 style="margin: 0; color: #374151; font-size: 1.1rem; font-weight: 600;">🚪 Retention Risk</h3>
+            <h1 style="margin: 0.5rem 0; color: {risk_color}; font-size: 2.5rem; font-weight: 700;">{risk_icon} {retention_risk}</h1>
+            <p style="margin: 0; color: #6b7280; font-size: 0.9rem; line-height: 1.4;">
+                <strong>What it means:</strong> {risk_meaning}<br>
+                <strong>Based on:</strong> JOLTS Survey Data<br>
+                <strong>Tracking:</strong> Quit rate trends
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    # Executive Action Cards
+    st.markdown("---")
+    st.subheader("🎯 Recommended Actions")
+    
+    # Determine primary action based on market conditions
+    if "EMPLOYER" in summary['market_state']:
+        primary_action = {
+            "title": "🚀 Accelerate Strategic Hiring",
+            "description": "Market conditions favor employers - great time to fill critical roles",
+            "actions": [
+                "Move forward with delayed hiring plans",
+                "Focus on upgrading talent in key positions", 
+                "Negotiate better terms with candidates"
+            ],
+            "color": "#10b981",
+            "urgency": "Opportunity Window"
+        }
+        secondary_action = {
+            "title": "📊 Optimize Workforce Costs", 
+            "description": "Reduced retention pressure allows for workforce optimization",
+            "actions": [
+                "Review compensation benchmarks",
+                "Consider organizational restructuring",
+                "Reduce retention bonuses"
+            ],
+            "color": "#3730a3"
+        }
+    elif "EMPLOYEE" in summary['market_state']:
+        primary_action = {
+            "title": "🔒 Strengthen Retention Programs",
+            "description": "Employee's market - focus on keeping your best talent",
+            "actions": [
+                "Accelerate promotion timelines for top performers",
+                "Increase retention bonuses and benefits",
+                "Improve manager training to reduce quit risk"
+            ],
+            "color": "#ef4444",
+            "urgency": "High Priority"
+        }
+        secondary_action = {
+            "title": "⏸️ Slow Non-Critical Hiring",
+            "description": "Difficult hiring market - be selective with new roles",
+            "actions": [
+                "Delay non-essential positions",
+                "Increase candidate compensation expectations",
+                "Focus on internal promotions"
+            ],
+            "color": "#f59e0b"
+        }
+    else:
+        primary_action = {
+            "title": "⚖️ Balanced Approach",
+            "description": "Mixed market conditions - maintain flexibility",
+            "actions": [
+                "Proceed with planned hiring at current pace",
+                "Monitor retention metrics weekly",
+                "Prepare contingency plans for market shifts"
+            ],
+            "color": "#f59e0b",
+            "urgency": "Standard Operations"
+        }
+        secondary_action = {
+            "title": "📈 Monitor Leading Indicators", 
+            "description": "Watch for early signals of market direction change",
+            "actions": [
+                "Track quit rates by department",
+                "Monitor job posting trends in your industry",
+                "Survey employee sentiment monthly"
+            ],
+            "color": "#6366f1"
+        }
+    
+    # Display action cards
+    action_col1, action_col2 = st.columns(2)
+    
+    with action_col1:
+        urgency_badge = f"<span style='background: {primary_action['color']}; color: white; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.8rem; font-weight: 600;'>{primary_action.get('urgency', 'Action Item')}</span>"
+        
+        st.markdown(f"""
+        <div style="background: white; border-left: 5px solid {primary_action['color']}; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 1rem;">
+            <div style="margin-bottom: 0.5rem;">{urgency_badge}</div>
+            <h3 style="margin: 0.5rem 0; color: #1f2937; font-size: 1.2rem;">{primary_action['title']}</h3>
+            <p style="margin: 0.5rem 0; color: #6b7280; line-height: 1.5;">{primary_action['description']}</p>
+            <ul style="margin: 1rem 0; padding-left: 1.5rem; color: #374151;">
+                {''.join([f"<li>{action}</li>" for action in primary_action['actions']])}
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
+        
+    with action_col2:
+        st.markdown(f"""
+        <div style="background: white; border-left: 5px solid {secondary_action['color']}; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 1rem;">
+            <h3 style="margin: 0 0 0.5rem 0; color: #1f2937; font-size: 1.2rem;">{secondary_action['title']}</h3>
+            <p style="margin: 0.5rem 0; color: #6b7280; line-height: 1.5;">{secondary_action['description']}</p>
+            <ul style="margin: 1rem 0; padding-left: 1.5rem; color: #374151;">
+                {''.join([f"<li>{action}</li>" for action in secondary_action['actions']])}
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Data credibility footer for executives
+    st.markdown("---")
+    st.markdown("""
+    <div style="background: #f8fafc; padding: 1rem; border-radius: 8px; border-left: 4px solid #3730a3; margin-top: 2rem;">
+        <h4 style="margin: 0 0 0.5rem 0; color: #1e40af; font-size: 1rem;">📊 Data Sources & Credibility</h4>
+        <div style="color: #475569; font-size: 0.9rem; line-height: 1.5;">
+            <strong>Primary Sources:</strong><br>
+            • <strong>U.S. Bureau of Labor Statistics (BLS)</strong> - Official unemployment and employment data<br>
+            • <strong>FRED Economic Data (Federal Reserve)</strong> - Job openings, hires, quits, and economic indicators<br>
+            • <strong>JOLTS Survey</strong> - Job Openings and Labor Turnover Survey (monthly)<br><br>
+            
+            <strong>Update Frequency:</strong> Data refreshes automatically daily at 7:00 AM UTC<br>
+            <strong>Methodology:</strong> Signals based on established economic research and historical patterns<br>
+            <strong>Confidence Level:</strong> High - based on official government statistics with 30+ year track record
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
-with col2:
-    outlook = summary['hiring_outlook']
-    status_class = 'status-positive' if outlook == 'FAVORABLE' else 'status-negative' if outlook == 'CHALLENGING' else 'status-warning'
-    st.markdown(f"""
-    <div class="metric-card {status_class}">
-        <h3 class="metric-title">Hiring Outlook</h3>
-        <h2 class="metric-value">{outlook}</h2>
-        <p class="metric-subtitle">EPI: {summary['metrics']['employer_power_index']['value']}</p>
-    </div>
-    """, unsafe_allow_html=True)
+else:
+    # DETAILED MODE: Original 4 technical metrics
+    with col1:
+        # Determine status class based on market state
+        state = summary['market_state']
+        status_class = 'status-positive' if 'EMPLOYER' in state else 'status-negative' if 'EMPLOYEE' in state else 'status-warning'
+        st.markdown(f"""
+        <div class="metric-card {status_class}">
+            <h3 class="metric-title">Market State</h3>
+            <h2 class="metric-value">{state}</h2>
+            <p class="metric-subtitle">{summary['date']}</p>
+        </div>
+        """, unsafe_allow_html=True)
 
-with col3:
-    # Lower unemployment is generally good (status-positive), higher is concerning
-    unemp_rate = float(summary['metrics']['unemployment_rate']['value'].replace('%', ''))
-    status_class = 'status-positive' if unemp_rate < 4.5 else 'status-warning' if unemp_rate < 6.0 else 'status-negative'
-    st.markdown(f"""
-    <div class="metric-card {status_class}">
-        <h3 class="metric-title">Unemployment Rate</h3>
-        <h2 class="metric-value">{summary['metrics']['unemployment_rate']['value']}</h2>
-        <p class="metric-subtitle">{summary['metrics']['unemployment_rate']['mom_change']} MoM</p>
-    </div>
-    """, unsafe_allow_html=True)
+    with col2:
+        outlook = summary['hiring_outlook']
+        status_class = 'status-positive' if outlook == 'FAVORABLE' else 'status-negative' if outlook == 'CHALLENGING' else 'status-warning'
+        st.markdown(f"""
+        <div class="metric-card {status_class}">
+            <h3 class="metric-title">Hiring Outlook</h3>
+            <h2 class="metric-value">{outlook}</h2>
+            <p class="metric-subtitle">EPI: {summary['metrics']['employer_power_index']['value']}</p>
+        </div>
+        """, unsafe_allow_html=True)
 
-with col4:
-    risk = summary['retention_risk']
-    status_class = 'status-negative' if risk == 'ELEVATED' else 'status-positive' if risk == 'LOW' else 'status-warning'
-    st.markdown(f"""
-    <div class="metric-card {status_class}">
-        <h3 class="metric-title">Retention Risk</h3>
-        <h2 class="metric-value">{risk}</h2>
-        <p class="metric-subtitle">Velocity: {summary['metrics']['talent_velocity']['value']}</p>
-    </div>
-    """, unsafe_allow_html=True)
+    with col3:
+        # Lower unemployment is generally good (status-positive), higher is concerning
+        unemp_rate = float(summary['metrics']['unemployment_rate']['value'].replace('%', ''))
+        status_class = 'status-positive' if unemp_rate < 4.5 else 'status-warning' if unemp_rate < 6.0 else 'status-negative'
+        st.markdown(f"""
+        <div class="metric-card {status_class}">
+            <h3 class="metric-title">Unemployment Rate</h3>
+            <h2 class="metric-value">{summary['metrics']['unemployment_rate']['value']}</h2>
+            <p class="metric-subtitle">{summary['metrics']['unemployment_rate']['mom_change']} MoM</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with col4:
+        risk = summary['retention_risk']
+        status_class = 'status-negative' if risk == 'ELEVATED' else 'status-positive' if risk == 'LOW' else 'status-warning'
+        st.markdown(f"""
+        <div class="metric-card {status_class}">
+            <h3 class="metric-title">Retention Risk</h3>
+            <h2 class="metric-value">{risk}</h2>
+            <p class="metric-subtitle">Velocity: {summary['metrics']['talent_velocity']['value']}</p>
+        </div>
+        """, unsafe_allow_html=True)
 
 # Quick trends visualization
 st.subheader("📈 Market Trends at a Glance")
@@ -402,14 +638,28 @@ st.success("""
 - Automated nightly refresh via GitHub Actions
 """)
 
-# === DATA FRESHNESS ===
-if 'date' in full_data.columns:
-    latest_date = full_data['date'].max()
-    st.markdown(f"---")
-    st.caption(f"📅 Data current through: **{latest_date.strftime('%B %d, %Y')}**")
-    st.caption("🔄 Data refreshes automatically daily at 7:00 AM UTC via GitHub Actions")
-else:
-    st.caption("📅 Data freshness information unavailable")
+# === DATA FRESHNESS & CREDIBILITY ===
+if not executive_mode:  # Only show in detailed mode since executive mode has its own footer
+    if 'date' in full_data.columns:
+        latest_date = full_data['date'].max()
+        days_old = (pd.Timestamp.now() - latest_date).days
+        
+        freshness_color = "#10b981" if days_old <= 3 else "#f59e0b" if days_old <= 7 else "#ef4444"
+        freshness_text = "Very Fresh" if days_old <= 3 else "Fresh" if days_old <= 7 else "Needs Update"
+        
+        st.markdown(f"---")
+        st.markdown(f"""
+        <div style="background: #f8fafc; padding: 1rem; border-radius: 8px; text-align: center;">
+            <p style="margin: 0; color: #374151;">
+                📅 <strong>Data Current Through:</strong> {latest_date.strftime('%B %d, %Y')} 
+                <span style="color: {freshness_color}; font-weight: 600;">({freshness_text})</span><br>
+                🔄 <strong>Auto-refresh:</strong> Daily at 7:00 AM UTC via GitHub Actions<br>
+                📊 <strong>Sources:</strong> Federal Reserve Economic Data (FRED) & Bureau of Labor Statistics
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.caption("📅 Data freshness information unavailable")
 
 # Footer
 st.markdown("""

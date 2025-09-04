@@ -23,11 +23,12 @@ class MarketSignals:
         
     def calculate_employer_power_index(self) -> pd.Series:
         """
-        Calculate Employer Power Index (EPI).
-        Higher values = employer's market (easier hiring, retention)
-        Lower values = employee's market (harder hiring, retention challenges)
+        Calculate Hiring Advantage Score (formerly Employer Power Index).
+        Higher values = strong hiring advantage (easier to find and keep talent)
+        Lower values = weak hiring advantage (focus on retention over hiring)
         
         Formula: (Unemployment Rate × Job Seekers per Opening) / (Quits Rate × Wage Growth Proxy)
+        Based on: FRED Economic Data from Federal Reserve and Bureau of Labor Statistics
         """
         # Estimate job seekers per opening (inverse of tightness)
         if 'job_openings_index' in self.df.columns:
