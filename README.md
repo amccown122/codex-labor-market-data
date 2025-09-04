@@ -79,6 +79,16 @@ make app
 streamlit run app/streamlit_app.py
 ```
 
+## Automated Refresh (GitHub Actions)
+- This repo includes a workflow at `.github/workflows/refresh.yml` that refreshes data nightly and uploads artifacts.
+- Setup steps:
+  1. In GitHub, go to Settings → Secrets and variables → Actions → New repository secret.
+  2. Add `FRED_API_KEY` with your key from fred.stlouisfed.org.
+  3. Enable Actions under the Actions tab (if disabled) and run the workflow manually once (Workflow dispatch) or wait for the nightly schedule.
+- Artifacts:
+  - `labor-market-csv`: CSV files under `data/csv/`.
+  - `labor-market-duckdb`: `data/labor.duckdb` (if enabled by env; default true in CI).
+
 ## Initial FRED Series
 - UNRATE — Unemployment Rate
 - JTSJOL — Job Openings: Total
@@ -105,4 +115,3 @@ streamlit run app/streamlit_app.py
 - Phase 0: FRED + skills, indices, Streamlit MVP (this PoC).
 - Phase 1: Add geo granularity (LAUS/JOLTS region), WARN.
 - Phase 2: Paid postings vendor; title/skill normalization; role-geo pay benchmarks.
-

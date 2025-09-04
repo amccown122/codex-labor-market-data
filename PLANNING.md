@@ -37,7 +37,7 @@ Goal: Ship a small, dependable Streamlit dashboard with daily-refresh free signa
 ### DX/Packaging
 - [ ] `Makefile` (`refresh`, `app`).
 - [ ] README polish with screenshots placeholders.
-- [ ] Optional: GitHub Action cron to run `make refresh` and push CSV artifacts.
+- [x] GitHub Action cron to run `make refresh` and upload CSV/DuckDB artifacts.
 
 ## Data Contracts
 - `fred_series_values`: `series_id (str)`, `date (date)`, `value (float)`.
@@ -59,4 +59,3 @@ Goal: Ship a small, dependable Streamlit dashboard with daily-refresh free signa
 - LAUS state/MSA unemployment; regional JOLTS.
 - WARN layoff events.
 - Vendor postings feed; title/skill normalization; pay ranges.
-
