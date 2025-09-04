@@ -19,39 +19,109 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for better styling
+# Professional Executive Dashboard Styling
 st.markdown("""
 <style>
+    /* Import professional font */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    
+    /* Global overrides */
+    .main .block-container {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        padding-top: 1rem;
+    }
+    
+    /* Executive header with subtle branding */
     .main-header {
-        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-        padding: 2rem;
-        border-radius: 10px;
+        background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
+        padding: 2.5rem;
+        border-radius: 16px;
         margin-bottom: 2rem;
         color: white;
+        box-shadow: 0 20px 40px rgba(30, 58, 138, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.1);
     }
+    
+    /* Professional metric cards with status-based colors */
     .metric-card {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        padding: 1.5rem;
-        border-radius: 10px;
-        color: white;
-        text-align: center;
-    }
-    .feature-card {
-        border: 1px solid #e0e0e0;
-        border-radius: 8px;
-        padding: 1rem;
-        margin: 0.5rem 0;
         background: white;
+        padding: 2rem;
+        border-radius: 16px;
+        color: #1f2937;
+        text-align: center;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+        border: 1px solid #f1f5f9;
+        transition: all 0.3s ease;
     }
-    .nav-button {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    
+    .metric-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12);
+    }
+    
+    /* Status indicators with semantic colors */
+    .status-positive { border-left: 4px solid #10b981; }
+    .status-warning { border-left: 4px solid #f59e0b; }
+    .status-negative { border-left: 4px solid #ef4444; }
+    .status-neutral { border-left: 4px solid #6b7280; }
+    
+    /* Typography hierarchy */
+    .metric-title {
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #6b7280;
+        margin: 0;
+    }
+    
+    .metric-value {
+        font-size: 2.25rem;
+        font-weight: 700;
+        color: #111827;
+        margin: 0.5rem 0;
+        line-height: 1;
+    }
+    
+    .metric-subtitle {
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin: 0;
+        font-weight: 400;
+    }
+    
+    /* Professional feature cards */
+    .feature-card {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .feature-card:hover {
+        border-color: #3730a3;
+        box-shadow: 0 4px 12px rgba(55, 48, 163, 0.1);
+    }
+    
+    /* CTA buttons with consistent branding */
+    .cta-button {
+        background: linear-gradient(135deg, #3730a3 0%, #1e40af 100%);
         color: white;
         border: none;
-        padding: 0.5rem 1rem;
-        border-radius: 5px;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
         text-decoration: none;
         display: inline-block;
-        margin: 0.25rem;
+        margin: 0.5rem 0.25rem;
+        transition: all 0.2s ease;
+    }
+    
+    .cta-button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 20px rgba(55, 48, 163, 0.3);
     }
 </style>
 """, unsafe_allow_html=True)
@@ -112,38 +182,48 @@ st.header("📊 Executive Dashboard")
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
+    # Determine status class based on market state
+    state = summary['market_state']
+    status_class = 'status-positive' if 'EMPLOYER' in state else 'status-negative' if 'EMPLOYEE' in state else 'status-warning'
     st.markdown(f"""
-    <div class="metric-card">
-        <h3 style="margin: 0; color: white;">Market State</h3>
-        <h2 style="margin: 0.5rem 0; color: white;">{summary['market_state']}</h2>
-        <p style="margin: 0; opacity: 0.9;">{summary['date']}</p>
+    <div class="metric-card {status_class}">
+        <h3 class="metric-title">Market State</h3>
+        <h2 class="metric-value">{state}</h2>
+        <p class="metric-subtitle">{summary['date']}</p>
     </div>
     """, unsafe_allow_html=True)
 
 with col2:
+    outlook = summary['hiring_outlook']
+    status_class = 'status-positive' if outlook == 'FAVORABLE' else 'status-negative' if outlook == 'CHALLENGING' else 'status-warning'
     st.markdown(f"""
-    <div class="metric-card">
-        <h3 style="margin: 0; color: white;">Hiring Outlook</h3>
-        <h2 style="margin: 0.5rem 0; color: white;">{summary['hiring_outlook']}</h2>
-        <p style="margin: 0; opacity: 0.9;">EPI: {summary['metrics']['employer_power_index']['value']}</p>
+    <div class="metric-card {status_class}">
+        <h3 class="metric-title">Hiring Outlook</h3>
+        <h2 class="metric-value">{outlook}</h2>
+        <p class="metric-subtitle">EPI: {summary['metrics']['employer_power_index']['value']}</p>
     </div>
     """, unsafe_allow_html=True)
 
 with col3:
+    # Lower unemployment is generally good (status-positive), higher is concerning
+    unemp_rate = float(summary['metrics']['unemployment_rate']['value'].replace('%', ''))
+    status_class = 'status-positive' if unemp_rate < 4.5 else 'status-warning' if unemp_rate < 6.0 else 'status-negative'
     st.markdown(f"""
-    <div class="metric-card">
-        <h3 style="margin: 0; color: white;">Unemployment</h3>
-        <h2 style="margin: 0.5rem 0; color: white;">{summary['metrics']['unemployment_rate']['value']}</h2>
-        <p style="margin: 0; opacity: 0.9;">{summary['metrics']['unemployment_rate']['mom_change']} MoM</p>
+    <div class="metric-card {status_class}">
+        <h3 class="metric-title">Unemployment Rate</h3>
+        <h2 class="metric-value">{summary['metrics']['unemployment_rate']['value']}</h2>
+        <p class="metric-subtitle">{summary['metrics']['unemployment_rate']['mom_change']} MoM</p>
     </div>
     """, unsafe_allow_html=True)
 
 with col4:
+    risk = summary['retention_risk']
+    status_class = 'status-negative' if risk == 'ELEVATED' else 'status-positive' if risk == 'LOW' else 'status-warning'
     st.markdown(f"""
-    <div class="metric-card">
-        <h3 style="margin: 0; color: white;">Retention Risk</h3>
-        <h2 style="margin: 0.5rem 0; color: white;">{summary['retention_risk']}</h2>
-        <p style="margin: 0; opacity: 0.9;">Velocity: {summary['metrics']['talent_velocity']['value']}</p>
+    <div class="metric-card {status_class}">
+        <h3 class="metric-title">Retention Risk</h3>
+        <h2 class="metric-value">{risk}</h2>
+        <p class="metric-subtitle">Velocity: {summary['metrics']['talent_velocity']['value']}</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -161,19 +241,30 @@ if len(full_data) > 12:
         horizontal_spacing=0.1
     )
     
-    # Unemployment
+    # Professional color palette for executive dashboards
+    colors = {
+        'primary': '#3730a3',      # Professional blue
+        'success': '#10b981',      # Green for positive metrics
+        'warning': '#f59e0b',      # Amber for caution
+        'danger': '#ef4444',       # Red for negative metrics
+        'neutral': '#6b7280'       # Gray for neutral
+    }
+    
+    # Unemployment (lower is better, so use inverted color logic)
     fig.add_trace(
         go.Scatter(x=recent_data['date'], y=recent_data['unemp_rate'], 
                   mode='lines+markers', name='Unemployment', 
-                  line=dict(color='#1f77b4', width=3)),
+                  line=dict(color=colors['danger'], width=3),
+                  marker=dict(size=6)),
         row=1, col=1
     )
     
-    # EPI
+    # EPI (balanced market at 1.0)
     fig.add_trace(
         go.Scatter(x=recent_data['date'], y=recent_data['employer_power_index'], 
                   mode='lines+markers', name='EPI',
-                  line=dict(color='#ff7f0e', width=3)),
+                  line=dict(color=colors['primary'], width=3),
+                  marker=dict(size=6)),
         row=1, col=2
     )
     
@@ -182,20 +273,33 @@ if len(full_data) > 12:
         fig.add_trace(
             go.Scatter(x=recent_data['date'], y=recent_data['job_openings_index'], 
                       mode='lines+markers', name='Job Openings',
-                      line=dict(color='#2ca02c', width=3)),
+                      line=dict(color=colors['success'], width=3),
+                      marker=dict(size=6)),
             row=2, col=1
         )
     
-    # Quits
+    # Quits (higher usually means employee confidence)
     if 'quits_index' in recent_data.columns:
         fig.add_trace(
             go.Scatter(x=recent_data['date'], y=recent_data['quits_index'], 
                       mode='lines+markers', name='Quits',
-                      line=dict(color='#d62728', width=3)),
+                      line=dict(color=colors['warning'], width=3),
+                      marker=dict(size=6)),
             row=2, col=2
         )
     
-    fig.update_layout(height=500, showlegend=False)
+    fig.update_layout(
+        height=500, 
+        showlegend=False,
+        plot_bgcolor='white',
+        paper_bgcolor='white',
+        font=dict(family='Inter, sans-serif', size=12, color='#374151'),
+        title_font=dict(size=16, color='#111827')
+    )
+    
+    # Clean grid styling
+    fig.update_xaxes(gridcolor='#f3f4f6', gridwidth=1, zeroline=False)
+    fig.update_yaxes(gridcolor='#f3f4f6', gridwidth=1, zeroline=False)
     fig.update_xaxes(title_text="Date")
     fig.update_yaxes(title_text="Rate (%)", row=1, col=1)
     fig.update_yaxes(title_text="Index", row=1, col=2)

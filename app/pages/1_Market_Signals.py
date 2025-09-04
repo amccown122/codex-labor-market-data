@@ -17,6 +17,87 @@ from src.signals.market_conditions import MarketSignals, generate_market_summary
 
 st.set_page_config(page_title="Market Signals", layout="wide", page_icon="📊")
 
+# Professional styling consistent with Home.py
+st.markdown("""
+<style>
+    /* Import professional font */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    
+    .main .block-container {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    
+    /* Signal cards with status indicators */
+    .signal-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        color: #1f2937;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        border: 1px solid #f1f5f9;
+        margin: 1rem 0;
+    }
+    
+    .signal-positive { border-left: 4px solid #10b981; }
+    .signal-warning { border-left: 4px solid #f59e0b; }
+    .signal-negative { border-left: 4px solid #ef4444; }
+    
+    .signal-title {
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #6b7280;
+        margin: 0 0 0.5rem 0;
+    }
+    
+    .signal-value {
+        font-size: 1.875rem;
+        font-weight: 700;
+        color: #111827;
+        margin: 0 0 0.5rem 0;
+    }
+    
+    .signal-subtitle {
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin: 0;
+    }
+    
+    /* Tab styling improvements */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+    }
+    
+    /* Alert improvements */
+    .trend-alert {
+        padding: 1rem;
+        border-radius: 8px;
+        margin: 0.5rem 0;
+        border-left: 4px solid;
+        font-weight: 500;
+    }
+    
+    .alert-success { 
+        background: #f0fdf4; 
+        border-color: #10b981; 
+        color: #065f46; 
+    }
+    
+    .alert-warning { 
+        background: #fffbeb; 
+        border-color: #f59e0b; 
+        color: #92400e; 
+    }
+</style>
+""", unsafe_allow_html=True)
+
 st.title("🎯 Labor Market Signals Dashboard")
 st.caption("Real-time intelligence on market conditions - Headwinds vs Tailwinds")
 
@@ -57,16 +138,15 @@ st.header("Executive Summary")
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    # Market State Card
+    # Market State Card with professional styling
     market_state = latest_data.get('market_state', 'UNKNOWN')
-    state_color = "🟢" if "EMPLOYER" in market_state else "🔴" if "EMPLOYEE" in market_state else "🟡"
+    status_class = 'signal-positive' if 'EMPLOYER' in market_state else 'signal-negative' if 'EMPLOYEE' in market_state else 'signal-warning'
     
     st.markdown(f"""
-    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                padding: 20px; border-radius: 10px; color: white;">
-        <h3 style="margin: 0; color: white;">Market State</h3>
-        <h1 style="margin: 10px 0; color: white;">{state_color} {market_state}</h1>
-        <p style="margin: 0; opacity: 0.9;">EPI: {latest_data['employer_power_index']:.2f} | 
+    <div class="signal-card {status_class}">
+        <h3 class="signal-title">Market State</h3>
+        <h1 class="signal-value">{market_state}</h1>
+        <p class="signal-subtitle">EPI: {latest_data['employer_power_index']:.2f} | 
            Velocity: {latest_data['talent_velocity']:.2f}</p>
     </div>
     """, unsafe_allow_html=True)
@@ -74,14 +154,13 @@ with col1:
 with col2:
     # Hiring Outlook Card
     hiring = latest_data.get('hiring_outlook', 'UNKNOWN')
-    hiring_icon = "↗️" if hiring == "FAVORABLE" else "↘️" if hiring == "CHALLENGING" else "→"
+    status_class = 'signal-positive' if hiring == 'FAVORABLE' else 'signal-negative' if hiring == 'CHALLENGING' else 'signal-warning'
     
     st.markdown(f"""
-    <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); 
-                padding: 20px; border-radius: 10px; color: white;">
-        <h3 style="margin: 0; color: white;">Hiring Outlook</h3>
-        <h1 style="margin: 10px 0; color: white;">{hiring_icon} {hiring}</h1>
-        <p style="margin: 0; opacity: 0.9;">Unemployment: {latest_data['unemp_rate']:.1f}% | 
+    <div class="signal-card {status_class}">
+        <h3 class="signal-title">Hiring Outlook</h3>
+        <h1 class="signal-value">{hiring}</h1>
+        <p class="signal-subtitle">Unemployment: {latest_data['unemp_rate']:.1f}% | 
            Openings Index: {latest_data.get('job_openings_index', 100):.0f}</p>
     </div>
     """, unsafe_allow_html=True)
@@ -89,27 +168,26 @@ with col2:
 with col3:
     # Retention Risk Card
     retention = latest_data.get('retention_risk', 'UNKNOWN')
-    risk_icon = "⚠️" if retention == "ELEVATED" else "✅" if retention == "LOW" else "⚡"
+    status_class = 'signal-negative' if retention == 'ELEVATED' else 'signal-positive' if retention == 'LOW' else 'signal-warning'
     
     st.markdown(f"""
-    <div style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); 
-                padding: 20px; border-radius: 10px; color: white;">
-        <h3 style="margin: 0; color: white;">Retention Risk</h3>
-        <h1 style="margin: 10px 0; color: white;">{risk_icon} {retention}</h1>
-        <p style="margin: 0; opacity: 0.9;">Quits Index: {latest_data.get('quits_index', 100):.0f} | 
+    <div class="signal-card {status_class}">
+        <h3 class="signal-title">Retention Risk</h3>
+        <h1 class="signal-value">{retention}</h1>
+        <p class="signal-subtitle">Quits Index: {latest_data.get('quits_index', 100):.0f} | 
            Hires Index: {latest_data.get('hires_index', 100):.0f}</p>
     </div>
     """, unsafe_allow_html=True)
 
-# Trend Summary
+# Trend Summary with professional styling
 if trends.get('signals'):
     st.markdown("---")
     st.subheader("📈 6-Month Trends")
     for signal in trends['signals']:
         if "rising" in signal or "accelerating" in signal or "tightening" in signal:
-            st.warning(f"⚠️ {signal}")
+            st.markdown(f'<div class="trend-alert alert-warning">⚠️ {signal}</div>', unsafe_allow_html=True)
         else:
-            st.success(f"✅ {signal}")
+            st.markdown(f'<div class="trend-alert alert-success">✅ {signal}</div>', unsafe_allow_html=True)
 
 # === STRATEGIC RECOMMENDATIONS ===
 st.markdown("---")
@@ -147,39 +225,60 @@ with tab1:
         vertical_spacing=0.15
     )
     
-    # EPI Chart
+    # Professional colors matching our design system
+    colors = {
+        'primary': '#3730a3',
+        'secondary': '#1e40af',  
+        'accent': '#ef4444',
+        'success': '#10b981'
+    }
+    
+    # EPI Chart with professional styling
     fig.add_trace(
         go.Scatter(
             x=data['date'], 
             y=data['employer_power_index'],
-            mode='lines',
+            mode='lines+markers',
             name='EPI',
-            line=dict(color='#667eea', width=3),
+            line=dict(color=colors['primary'], width=3),
+            marker=dict(size=4, color=colors['primary']),
             fill='tozeroy',
-            fillcolor='rgba(102, 126, 234, 0.1)'
+            fillcolor=f"rgba({int(colors['primary'][1:3], 16)}, {int(colors['primary'][3:5], 16)}, {int(colors['primary'][5:7], 16)}, 0.1)"
         ),
         row=1, col=1
     )
     
     # Add reference line at 1 (balanced market)
-    fig.add_hline(y=1, line_dash="dash", line_color="gray", 
-                  annotation_text="Balanced Market", row=1, col=1)
+    fig.add_hline(y=1, line_dash="dash", line_color="#6b7280", line_width=2,
+                  annotation_text="Balanced Market", annotation_font_color="#6b7280", row=1, col=1)
     
     # Talent Velocity Chart
     fig.add_trace(
         go.Scatter(
             x=data['date'], 
             y=data['talent_velocity'],
-            mode='lines',
+            mode='lines+markers',
             name='Velocity',
-            line=dict(color='#f5576c', width=3),
+            line=dict(color=colors['accent'], width=3),
+            marker=dict(size=4, color=colors['accent']),
             fill='tozeroy',
-            fillcolor='rgba(245, 87, 108, 0.1)'
+            fillcolor=f"rgba({int(colors['accent'][1:3], 16)}, {int(colors['accent'][3:5], 16)}, {int(colors['accent'][5:7], 16)}, 0.1)"
         ),
         row=2, col=1
     )
     
-    fig.update_layout(height=600, showlegend=False)
+    fig.update_layout(
+        height=600, 
+        showlegend=False,
+        plot_bgcolor='white',
+        paper_bgcolor='white',
+        font=dict(family='Inter, sans-serif', size=12, color='#374151'),
+        title_font=dict(size=14, color='#111827')
+    )
+    
+    # Clean grid styling
+    fig.update_xaxes(gridcolor='#f3f4f6', gridwidth=1, zeroline=False)
+    fig.update_yaxes(gridcolor='#f3f4f6', gridwidth=1, zeroline=False)
     fig.update_xaxes(title_text="Date", row=2, col=1)
     fig.update_yaxes(title_text="Index Value", row=1, col=1)
     fig.update_yaxes(title_text="Velocity Score", row=2, col=1)
@@ -203,8 +302,23 @@ with tab2:
                 'talent_velocity': 'Velocity'
             },
             title="Market Dynamics: Unemployment vs Quits (sized by velocity)",
-            color_continuous_scale='RdYlGn'
+            color_continuous_scale='RdYlBu_r'  # Blue to red, professional palette
         )
+        
+        # Professional styling
+        fig.update_layout(
+            plot_bgcolor='white',
+            paper_bgcolor='white',
+            font=dict(family='Inter, sans-serif', size=12, color='#374151'),
+            title_font=dict(size=16, color='#111827'),
+            coloraxis_colorbar=dict(
+                title_font=dict(size=12),
+                tickfont=dict(size=10)
+            )
+        )
+        
+        fig.update_xaxes(gridcolor='#f3f4f6', gridwidth=1, zeroline=False)
+        fig.update_yaxes(gridcolor='#f3f4f6', gridwidth=1, zeroline=False)
         
         st.plotly_chart(fig, use_container_width=True)
         
@@ -354,9 +468,9 @@ if len(data) > 1:
 
 if alerts:
     for alert in alerts:
-        st.warning(alert)
+        st.markdown(f'<div class="trend-alert alert-warning">{alert}</div>', unsafe_allow_html=True)
 else:
-    st.success("✅ No significant market disruptions detected")
+    st.markdown('<div class="trend-alert alert-success">✅ No significant market disruptions detected</div>', unsafe_allow_html=True)
 
 # Footer with data freshness
 st.markdown("---")
