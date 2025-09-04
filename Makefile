@@ -1,10 +1,18 @@
-PY=python
+PY=python3
 
-.PHONY: refresh app fmt
+.PHONY: refresh app refresh-fred refresh-skills refresh-metrics
 
-refresh:
+# Full refresh pipeline
+refresh: refresh-fred refresh-skills refresh-metrics
+
+# Individual refresh targets for modularity
+refresh-fred:
 	$(PY) -m src.sources.fred
-	$(PY) -m src.sources.lightcast_open_skills
+
+refresh-skills:
+	-$(PY) -m src.sources.lightcast_open_skills
+
+refresh-metrics:
 	$(PY) -m src.transforms.build_market_metrics
 
 app:

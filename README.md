@@ -54,8 +54,8 @@ Prereqs: Python 3.10+, pip
 
 Install:
 ```
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
+python3 -m venv .venv && source .venv/bin/activate
+python3 -m pip install -r requirements.txt
 ```
 
 Configure:
@@ -111,7 +111,13 @@ streamlit run app/streamlit_app.py
 ## Attribution
 - Cite FRED and Lightcast Open Skills in any published outputs. No PII.
 
+## Current Status
+- ✅ FRED data integration working (5 economic series)
+- ✅ Streamlit dashboard functional with interactive controls
+- ⚠️ Lightcast skills data URL needs update (optional component)
+- ✅ Modular architecture ready for additional data sources
+
 ## Roadmap
-- Phase 0: FRED + skills, indices, Streamlit MVP (this PoC).
+- Phase 0: FRED + skills, indices, Streamlit MVP (this PoC) - **ACTIVE**
 - Phase 1: Add geo granularity (LAUS/JOLTS region), WARN.
 - Phase 2: Paid postings vendor; title/skill normalization; role-geo pay benchmarks.

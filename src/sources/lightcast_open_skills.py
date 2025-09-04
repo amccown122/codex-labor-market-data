@@ -10,7 +10,9 @@ import requests
 from src.utils.storage import read_csv, write_csv, write_duckdb_table
 
 
-# Public Lightcast Open Skills dataset (CSV). If this URL changes, update here.
+# Public Lightcast Open Skills dataset (CSV). 
+# NOTE: As of Jan 2025, this URL may need updating. Check:
+# https://github.com/lightcast/open-skills for the latest location
 OPEN_SKILLS_CSV = (
     "https://raw.githubusercontent.com/lightcast/open-skills/main/data/skills.csv"
 )
@@ -51,8 +53,8 @@ def normalize_skills(df: pd.DataFrame) -> pd.DataFrame:
 def main() -> int:
     df = fetch_open_skills()
     if df is None or df.empty:
-        print("Open Skills: no data fetched.")
-        return 1
+        print("Open Skills: no data fetched (optional component - dashboard works without it).")
+        return 0  # Return success since this is optional
     norm = normalize_skills(df)
     existing = read_csv("skills_taxonomy.csv")
     if existing is not None and not existing.empty:

@@ -9,17 +9,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # Refresh all data sources (FRED, Lightcast) and rebuild metrics
 make refresh
 
+# Refresh individual components (modular approach)
+make refresh-fred     # Just FRED data
+make refresh-skills   # Just skills taxonomy (optional)
+make refresh-metrics  # Just rebuild metrics
+
 # Launch Streamlit dashboard
 make app
 # Alternative:
-streamlit run app/streamlit_app.py
+python3 -m streamlit run app/streamlit_app.py
 ```
 
 ### Environment Setup
 ```bash
 # Create virtual environment and install dependencies
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
+python3 -m venv .venv && source .venv/bin/activate
+python3 -m pip install -r requirements.txt
 
 # Configure environment (required before running)
 cp .env.example .env
@@ -90,9 +95,46 @@ Implement in `src/transforms/build_market_metrics.py`:
 2. Follow pattern: fetch → normalize → merge with existing → write to CSV/DuckDB
 3. Register in Makefile under `refresh` target
 
+## Troubleshooting
+
+### Common Issues
+1. **Streamlit date slider error**: Fixed by converting Pandas Timestamps to Python datetime objects in app/streamlit_app.py:99-104
+2. **Lightcast skills URL 404**: This is optional - dashboard works without skills data. URL may need updating from https://github.com/lightcast/open-skills
+3. **Python command not found**: Use `python3` instead of `python` on macOS/Linux
+
+## Modular Design for Extensibility
+
+### Adding New Data Sources
+1. Create a new module in `src/sources/` following the pattern:
+   - Fetch data from external API/source
+   - Normalize to consistent schema
+   - Merge with existing data (incremental updates)
+   - Write to CSV and optionally DuckDB
+   - Return 0 on success, handle errors gracefully
+
+2. Add to Makefile with individual target:
+```makefile
+refresh-newsource:
+	$(PY) -m src.sources.newsource
+```
+
+3. Update the main `refresh` target to include it
+
+### Adding New Metrics
+1. Edit `src/transforms/build_market_metrics.py`
+2. Add column mappings in `build_metrics()` function
+3. Compute derived metrics using normalized indices
+4. Include in final column order
+
+### Making Components Optional
+- Return exit code 0 even on failure for optional components (see lightcast_open_skills.py:55)
+- Use `-` prefix in Makefile to ignore errors: `-$(PY) -m src.sources.optional_source`
+- Dashboard should handle missing data gracefully
+
 ## GitHub Actions
 
 Automated nightly refresh at `.github/workflows/refresh.yml`:
 - Runs daily at 07:00 UTC
 - Requires `FRED_API_KEY` secret in repository settings
 - Uploads artifacts: `labor-market-csv` and `labor-market-duckdb`
+- Python version fixed at 3.11 for consistency
